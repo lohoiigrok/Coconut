@@ -1,8 +1,8 @@
-# utils/data_generator.py
 import random
+import uuid
 import string
 from faker import Faker
-from typing import Dict, List
+from typing import Dict, List, Any
 
 faker = Faker()
 
@@ -52,10 +52,10 @@ class DataGenerator:
     # ========== MOVIES API ==========
 
     @staticmethod
-    def movie_data(name: str = None) -> Dict:
+    def movie_data(name: str = None) -> dict[str, Any]:
         """Валидные данные для POST/PATCH"""
         return {
-            "name": name or f"{faker.word().title()} {random.randint(1990, 2025)}",
+            "name": name or f"Movie_{uuid.uuid4().hex[:12]}",
             "description": faker.sentence(),  # Обязательное, до этого потерял его.
             "price": random.randint(50, 1000),
             "location": random.choice(["MSK", "SPB"]),
@@ -64,7 +64,7 @@ class DataGenerator:
         }
 
     @staticmethod
-    def invalid_movie_data() -> List[Dict]:
+    def invalid_movie_data() -> List[dict[str, Any]]:
         """Невалидные данные для негативных тестов"""
         return [
             # Без name (обязательное)
@@ -87,7 +87,7 @@ class DataGenerator:
         ]
 
     @staticmethod
-    def movie_query_params() -> Dict:
+    def movie_query_params() -> dict[str, Any]:
         """Query параметры для GET /movies"""
         return {
             "pageSize": random.randint(1, 20),
@@ -100,7 +100,7 @@ class DataGenerator:
         }
 
     @staticmethod
-    def genre_data(name: str = None) -> Dict:
+    def genre_data(name: str = None) -> dict[str, Any]:
         """Валидные данные для жанра"""
         return {
             "name": name or f"{faker.word().title()} Genre"
@@ -109,7 +109,7 @@ class DataGenerator:
     # ========== AUTH API ==========
 
     @staticmethod
-    def user_data(email: str = None) -> Dict:
+    def user_data(email: str = None) -> dict[str, Any]:
         """Данные для регистрации/создания пользователя"""
         return {
             "email": email or DataGenerator.generate_random_email(),

@@ -2,6 +2,10 @@ import json
 import requests
 import logging
 import os
+from typing import Union, Iterable
+
+StatusCodes = Union[int, Iterable[int], None]
+
 
 class CustomRequester:
     """
@@ -12,7 +16,7 @@ class CustomRequester:
         "Accept": "application/json"
     }
 
-    def __init__(self, session, base_url):
+    def __init__(self, session: requests.Session, base_url: str) -> None:
         """
         Инициализация кастомного реквестера.
         :param session: Объект requests.Session.
@@ -24,7 +28,7 @@ class CustomRequester:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
-    def send_request(self, method, endpoint, data=None, expected_status=200, need_logging=True):
+    def send_request(self, method: str, endpoint: str, data: dict[str, Any] | None =None, expected_status: StatusCodes=200, need_logging=True) -> requests.Response:
         """
         Универсальный метод для отправки запросов.
         :param method: HTTP метод (GET, POST, PUT, DELETE и т.д.).
@@ -35,7 +39,21 @@ class CustomRequester:
         :return: Объект ответа requests.Response.
         """
         url = f"{self.base_url}{endpoint}"
-        response = self.session.request(method, url, json=data, headers=self.headers)
+
+        if method.upper() == "GET":
+            response = self.session.request(
+                method=method,
+                url=url,
+                params=data,
+                headers=self.headers
+            )
+        else:
+            response = self.session.request(
+                method=method,
+                url=url,
+                json=data,
+                headers=self.headers
+            )
 
         if need_logging:
             self.log_request_and_response(response)
@@ -45,7 +63,7 @@ class CustomRequester:
 
         return response
 
-    def _update_session_headers(self, **kwargs):
+    def _update_session_headers(self, **kwargs: str) -> None:
         """
         Обновление заголовков сессии.
         :param session: Объект requests.Session, предоставленный API-классом.
@@ -54,7 +72,7 @@ class CustomRequester:
         self.headers.update(kwargs) # Обновляем базовые заголовки
         self.session.headers.update(self.headers) # Обновляем заголовки в текущей сессии
 
-    def log_request_and_response(self, response):
+    def log_request_and_response(self, response: requests.Response) -> None:
         """
         Логирование запросов и ответов.
         :param response: Объект ответа requests.Response.

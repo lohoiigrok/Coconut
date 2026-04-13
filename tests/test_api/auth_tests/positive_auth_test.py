@@ -23,8 +23,6 @@ class TestAuthAPI:
         # Отправка запроса на авторизацию
         response = api_manager.auth_api.login_user(login_data)
         response_data = response.json()
-
-
         # Проверки
         assert "accessToken" in response_data, "Токен доступа отсустсвует в ответе"
         assert response_data["user"]["email"] == registered_user["email"], "Email не совпадает"
