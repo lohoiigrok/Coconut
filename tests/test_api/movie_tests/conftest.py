@@ -3,7 +3,6 @@ from requests import Session
 from constants import SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD
 from utils.data_generator import DataGenerator
 from clients.api_manager import ApiManager
-from typing import Generator
 from types.common_types import MovieListData, MovieData
 
 # Фикстуры по данным фильма
@@ -34,9 +33,9 @@ def created_movie(authorized_admin, movie_data) -> Generator[MovieData, None, No
 # Фикстуры для пользователей
 
 @pytest.fixture(scope="session")
-def api_manager() -> Generator[ApiManager, None, None]:
+def api_manager() -> ApiManager:
     """
-    Фикстура для паблик тестов без авториазции
+    Фикстура для тестов без необходимости авторизации
     """
     http_session = Session()
     manager = ApiManager(http_session)
@@ -46,7 +45,7 @@ def api_manager() -> Generator[ApiManager, None, None]:
     http_session.close()
 
 @pytest.fixture(scope="function")
-def () -> Generator[ApiManager, None, None]:
+def authorized_admin() -> ApiManager:
     """
     Фикстура для авторизации и возращает ApiManager с токеном админа.
     """
