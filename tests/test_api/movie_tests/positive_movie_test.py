@@ -4,7 +4,7 @@ class TestPositiveMoviesAPI:
         Получаем тестовый список фильмов на публичной роли
         """
         params = {"pageSize": 10, "page": 1}
-        response = api_manager.movies_api.get_movies_list(params, expected_status = 200)
+        response = api_manager.movies_api.get_movies_list(params, expected_status=200)
         data = response.json()
 
         assert 'movies' in data
@@ -17,7 +17,7 @@ class TestPositiveMoviesAPI:
         """
         Тестируем создание фильма на админской роли
         """
-        response = authorized_admin.movies_api.create_movie(movie_data, expected_status = 201)
+        response = authorized_admin.movies_api.create_movie(movie_data, expected_status=201)
         response_data = response.json()
 
         assert "id" in response_data
@@ -33,18 +33,24 @@ class TestPositiveMoviesAPI:
 
     def test_patch_movie_auth(self,created_movie, authorized_admin, movie_data):
         """
-        Проверяем возможность изменения в созданном фильме на админской роли.
+        Проверяем возможность изменения данных в созданном фильме на админской роли.
         """
         movie_id = created_movie["id"]
         updated_data = movie_data.copy()
         updated_data['price'] = 999
-        authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status = 200)
-        response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status = 200)
-        data = response.json()
+        response1 = authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
+        data1 = response.json()
+        
+        assert "id" in data1, "В ответе отсутствует id фильма"
+        assert data1["name"] == updated_data["name"]
+        assert data1["price"] == 999
+        
+        response2 = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        data2 = response.json()
 
-        assert "id" in data, "В ответе на создание фильма отсутствует id"
-        assert data["id"] == movie_id
-        assert data["price"] == 999
+        assert "id" in data2, "В ответе отсутствует id фильма"
+        assert data2["id"] == movie_id
+        assert data2["price"] == 999
 
     def test_delete_movie_auth(self, authorized_admin, movie_data):
         """
@@ -56,24 +62,26 @@ class TestPositiveMoviesAPI:
         assert "id" in data
         movie_id = data["id"]
 
-        delete_response = authorized_admin.movies_api.delete_movie(movie_id, expected_status = 200)
+        delete_response = authorized_admin.movies_api.delete_movie(movie_id, expected_status=200)
         delete_data = delete_response.json()
 
         assert "id" in delete_data
         assert delete_data["id"] == movie_id
 
-        response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status = 404)
+        response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=404)
         response_data = response.json()
 
         assert "message" in response_data
+        assert "Фильм не найден" in response_data["message"]
         assert "error" in response_data
+        assert "Not Found" in response_data["error"]
 
     def test_get_filter_location(self, api_manager):
         """
         Тестируем фильтр по локации на подборке фильма, публичная роль.
         """
         params = {"locations": "MSK"}
-        response = api_manager.movies_api.get_movies_list(params, expected_status = 200)
+        response = api_manager.movies_api.get_movies_list(params, expected_status=200)
         movie_data = response.json()
         movies = movie_data['movies']
         
@@ -86,8 +94,8 @@ class TestPositiveMoviesAPI:
         """
         Проверяем пагинацию на админской роли.
         """
-        resp1 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 1}, expected_status = 200)
-        resp2 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 2}, expected_status = 200)
+        resp1 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 1}, expected_status=200)
+        resp2 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 2}, expected_status=200)
         movies1 = resp1.json()['movies']
         ids1 = [movie["id"] for movie in movies1]
         movies2 = resp2.json()['movies']
@@ -127,7 +135,7 @@ class TestPositiveMoviesAPI:
         boundary_data["location"] = "MSK"
         boundary_data["published"] = True
 
-        response = authorized_admin.movies_api.create_movie(boundary_data, expected_status = 201)
+        response = authorized_admin.movies_api.create_movie(boundary_data, expected_status=201)
         data = response.json()
 
         assert "id" in data
