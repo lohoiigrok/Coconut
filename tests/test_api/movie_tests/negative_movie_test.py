@@ -7,6 +7,7 @@ class TestNegativeMoviesAPI:
         response_data = response.json()
 
         assert "message" in response_data
+        assert "Unauthorized" in response_data["message"]
         assert "id" not in response_data
 
 
@@ -19,6 +20,9 @@ class TestNegativeMoviesAPI:
         response_data = response.json()
 
         assert "message" in response_data
+        assert "Фильм не найден" in response_data["message"]
+        assert "error" in response_data
+        assert "Not Found" in response_data["error"]
         assert "id" not in response_data
 
 
@@ -31,6 +35,7 @@ class TestNegativeMoviesAPI:
         delete_data = delete_response.json()
 
         assert "message" in delete_data
+        assert "Unauthorized" in delete_data["message"]
         assert "id" not in delete_data
 
         get_response = api_manager.movies_api.get_single_movie(movie_id, expected_status=200)
@@ -52,7 +57,8 @@ class TestNegativeMoviesAPI:
         response2 = authorized_admin.movies_api.create_movie(movie_data, expected_status=409)
         response_data2 = response2.json()
 
-        assert "message" in response_data2
+        assert "error" in response_data2
+        assert "Conflict" in response_data2["error"]
         assert "id" not in response_data2
         authorized_admin.movies_api.clean_up_movie(movie_id)
 
@@ -65,6 +71,7 @@ class TestNegativeMoviesAPI:
             response_data = response.json()
 
             assert "message" in response_data
+            assert "Bad Request" in response_data["message"]
             assert "id" not in response_data
 
     def test_post_invalid_genre(self, authorized_admin, movie_data):
@@ -77,7 +84,7 @@ class TestNegativeMoviesAPI:
         response_data = response.json()
 
         assert "message" in response_data
-        assert "Bad request" in response_data
+        assert "Bad Request" in response_data["message"]
         assert "id" not in response_data
 
 
@@ -89,5 +96,5 @@ class TestNegativeMoviesAPI:
         response_data = response.json()
 
         assert "message" in response_data
-        assert "Bad request" in response_data['error"]
+        assert "Bad Request" in response_data["message"]
         assert "id" not in response_data
