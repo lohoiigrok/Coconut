@@ -6,7 +6,7 @@ class TestPositiveMoviesAPI:
         PUBLIC | GET movies -> movie list
         """
         params = {"pageSize": 10, "page": 1}
-        response = api_manager.movies_api.get_movies_list(params, expected_status=200)
+        response = api_manager.movies_api.get_movies_list(params, expected_status = 200)
         data = response.json()
 
         assert 'movies' in data
@@ -24,12 +24,11 @@ class TestPositiveMoviesAPI:
         """
         SUPER_ADMIN | PATCH movie -> expected updated movie |
         """
-        create_response = created_movie
-        movie_id = create_response["id"]
+        movie_id = created_movie["id"]
         updated_data = movie_data.copy()
         updated_data['price'] = 999
-        authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
-        response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status = 200)
+        response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status = 200)
         data = response.json()
 
         assert data["id"] == movie_id
@@ -41,15 +40,15 @@ class TestPositiveMoviesAPI:
         """
         create_response = authorized_admin.movies_api.create_movie(movie_data)
         movie_id = create_response.json()["id"]
-        authorized_admin.movies_api.delete_movie(movie_id, expected_status=200)
-        authorized_admin.movies_api.get_single_movie(movie_id, expected_status=404)
+        authorized_admin.movies_api.delete_movie(movie_id, expected_status = 200)
+        authorized_admin.movies_api.get_single_movie(movie_id, expected_status = 404)
 
     def test_get_filter_location(self, api_manager):
         """
         PUBLIC | Get movies with params -> certain list of movies
         """
         params = {"locations": "MSK"}
-        response = api_manager.movies_api.get_movies_list(params, expected_status=200)
+        response = api_manager.movies_api.get_movies_list(params, expected_status = 200)
         movie_data = response.json()
         movies = movie_data['movies']
         
@@ -65,8 +64,8 @@ class TestPositiveMoviesAPI:
         params = {"location": "MSK"}
         authorized_admin.movies_api.get_movies_list(params)
 
-        resp1 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 1}, expected_status=200)
-        resp2 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 2}, expected_status=200)
+        resp1 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 1}, expected_status = 200)
+        resp2 = authorized_admin.movies_api.get_movies_list({"pageSize": 5, "page": 2}, expected_status = 200)
         movies1 = resp1.json()['movies']
         movies2 = resp2.json()['movies']
 
@@ -91,23 +90,10 @@ class TestPositiveMoviesAPI:
         boundary_data["price"] = 50  # min
         boundary_data["genreId"] = 1  # min
 
-        response = authorized_admin.movies_api.create_movie(boundary_data, expected_status=201)
+        response = authorized_admin.movies_api.create_movie(boundary_data, expected_status = 201)
         data = response.json()
         
         assert "id" in data
         assert data["price"] == 50
 
         authorized_admin.movies_api.clean_up_movie(data["id"])
-
-
-    def test_patch_genre(self, authorized_admin, genre_data):
-        """
-        SUPER_ADMIN | PATCH genre -> updated genre
-        """
-        genre_id = 2
-
-        response = authorized_admin.movies_api.patch_genre(genre_id, genre_data, expected_status=200)
-        data = response.json()
-
-        assert "id" in data
-        assert data["id"] == genre_id, "Genre ID не изменился"

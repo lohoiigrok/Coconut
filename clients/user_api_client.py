@@ -1,15 +1,15 @@
 from testsam.customer_requester.custom_requester import CustomRequester
-import requests
+from requests import Response, Session
 
 class UserAPI(CustomRequester):
     """
     Класс для работы с API пользователей.
     """
-    def __init__(self, session: requests.Session) -> None:
+    def __init__(self, session: Session) -> None:
         super().__init__(session=session, base_url="https://auth.dev-cinescope.coconutqa.ru/")
         self.session = session
 
-    def get_user_info(self, user_id: int, expected_status: int=200) -> requests.Response:
+    def get_user_info(self, user_id: int, expected_status: int = 200) -> Response:
         """
         Получение информации о пользователе.
         :param user_id: ID пользователя.
@@ -22,7 +22,7 @@ class UserAPI(CustomRequester):
         )
 
 
-    def delete_user(self, user_id: int, expected_status=204) -> requests.Response:
+    def delete_user(self, user_id: int, expected_status = 204) -> Response:
         """
         Удаление пользователя.
         :param user_id: ID пользователя.
@@ -36,7 +36,7 @@ class UserAPI(CustomRequester):
 
 
 
-    def clean_up_user(self, user_id: int) -> requests.Response | None:
+    def clean_up_user(self, user_id: int) -> Response | None:
         """"
         Очистка данных после тестов
         :param user_id: ID пользователя.

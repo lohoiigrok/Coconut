@@ -1,11 +1,27 @@
-from faker import Faker
+
 import pytest
 import requests
-from testsam.constants import BASE_URL, REGISTER_ENDPOINT
-from testsam.customer_requester.custom_requester import CustomRequester
-from testsam.utils.data_generator import DataGenerator
+from constants import BASE_URL
+from customer_requester.custom_requester import CustomRequester
+from utils.data_generator import DataGenerator
+from clients.api_manager import ApiManager
 
-faker = Faker()
+
+@pytest.fixture(scope="session")
+def session():
+    """
+    Фикстура для создания HTTP-сессии.
+    """
+    http_session = requests.Session()
+    yield http_session
+    http_session.close()
+
+@pytest.fixture(scope="session")
+def api_manager(session):
+    """
+    Фикстура для создания экземпляра ApiManager.
+    """
+    return ApiManager(session)
 
 @pytest.fixture(scope="session")
 def test_user():
@@ -25,20 +41,20 @@ def test_user():
     }
 
 @pytest.fixture(scope="session")
-def registered_user(requester, test_user):
+def registered_user(api_manager, test_user):
     """
     Фикстура для регистрации и получения данных зарегистрированного пользователя.
     """
-    response = requester.send_request(
-        method="POST",
-        endpoint=REGISTER_ENDPOINT,
-        data=test_user,
-        expected_status=201
-    )
+    # Регистрируем
+    response = api_manager.auth_api.register_user()
+
     response_data = response.json()
     registered_user = test_user.copy()
     registered_user["id"] = response_data["id"]
-    return registered_user
+    yield registered_user
+
+    # Очищаем после теста
+    api_manager.user_api.clean_up_user(registered_user["id"])
 
 @pytest.fixture(scope="session")
 def requester():
