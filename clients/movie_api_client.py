@@ -1,17 +1,15 @@
-import requests
-from testsam.constants import MOVIES_ENDPOINT, MOVIE_BASE_URL
-from testsam.customer_requester.custom_requester import CustomRequester
-from typing import Dict, Iterable, Any, Optional, Union
+from requests import Response, Session
+from constants import MOVIES_ENDPOINT, MOVIE_BASE_URL
+from customer_requester.custom_requester import CustomRequester
+from typing import Optional
+from types.common_types import MovieData
 
-# Типы данных
-MovieData = Dict[str, Any]
-StatusCode = Union[int, Iterable[int], None]
 
 class MoviesApi(CustomRequester):
-    def __init__(self, session: requests.Session) -> None:
-        super().__init__(session=session, base_url=MOVIE_BASE_URL)
+    def __init__(self, session: Session) -> None:
+        super().__init__(session = session, base_url = MOVIE_BASE_URL)
 
-    def create_movie(self, movie_data: MovieData, expected_status: StatusCode=201) -> requests.Response:
+    def create_movie(self, movie_data: MovieData, expected_status: int = 201) -> Response:
         """"
         Создание нового фильма
         """
@@ -23,7 +21,7 @@ class MoviesApi(CustomRequester):
         )
 
 
-    def get_movies_list(self, data: Optional[MovieData]=None, expected_status: StatusCode=200) -> requests.Response:
+    def get_movies_list(self, data: Optional[MovieData]=None, expected_status: int = 200) -> Response:
         """
         Получение списка фильмов
         """
@@ -34,7 +32,7 @@ class MoviesApi(CustomRequester):
             expected_status=expected_status
         )
 
-    def get_single_movie(self, movie_id: int, expected_status: StatusCode=200)  -> requests.Response:
+    def get_single_movie(self, movie_id: int, expected_status: int = 200)  -> Response:
         """
         Получение отдельного фильма по ID
         """
@@ -44,7 +42,7 @@ class MoviesApi(CustomRequester):
             expected_status=expected_status
         )
 
-    def update_movie(self, movie_id: int, movie_data: MovieData, expected_status: StatusCode =200)  -> requests.Response:
+    def update_movie(self, movie_id: int, movie_data: MovieData, expected_status: int  = 200)  -> Response:
         """
         Обновление фильма.
         """
@@ -55,7 +53,7 @@ class MoviesApi(CustomRequester):
             expected_status=expected_status
         )
 
-    def delete_movie(self, movie_id: int, expected_status: StatusCode=200)  -> requests.Response:
+    def delete_movie(self, movie_id: int, expected_status: int = 200)  -> Response:
         """
         Удаление фильмаю
         """
@@ -66,17 +64,8 @@ class MoviesApi(CustomRequester):
         )
 
     def clean_up_movie(self, movie_id: int) -> None:
-        """Очистка фильма ПОСЛЕ теста (без проверки статуса)."""
+        """Очистка фильма ПОСЛЕ теста."""
         try:
-           self.delete_movie(movie_id, expected_status=200)
-        except:
-            pass
-
-    def patch_genre(self, genre_id: int, data: MovieData, expected_status: StatusCode) -> requests.Response:
-        """PATCH /genres/{id}"""
-        return self.send_request(
-            method="PATCH",
-            endpoint=f"{MOVIES_ENDPOINT}/genres/{genre_id}",
-            data=data,
-            expected_status=expected_status
-        )
+           self.delete_movie(movie_id, expected_status = 200)
+        except Exception as e:
+            self.logger.warning(f"Cleanup failed for movie {movie_id}: {e}")

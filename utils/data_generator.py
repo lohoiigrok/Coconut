@@ -2,7 +2,7 @@ import random
 import uuid
 import string
 from faker import Faker
-from typing import Dict, List, Any
+from typing import List, Any
 
 faker = Faker()
 
@@ -27,11 +27,7 @@ class DataGenerator:
     @staticmethod
     def generate_random_password() -> str:
         """
-        Генерация пароля, соответствующего требованиям:
-        - Минимум 1 буква.
-        - Минимум 1 цифра.
-        - Допустимые символы.
-        - Длина от 8 до 20 символов.
+        Генерация пароля, соответствующего требованиям документации
         """
         # Гарантируем наличие хотя бы одной буквы и одной цифры
         letters = random.choice(string.ascii_letters)
@@ -56,11 +52,11 @@ class DataGenerator:
         """Валидные данные для POST/PATCH"""
         return {
             "name": name or f"Movie_{uuid.uuid4().hex[:12]}",
-            "description": faker.sentence(),  # Обязательное, до этого потерял его.
-            "price": random.randint(50, 1000),
+            "description": faker.sentence(),
+            "price": random.randint(1, 999999999),
             "location": random.choice(["MSK", "SPB"]),
             "published": random.choice([True, False]),
-            "genreId": random.randint(1, 4)
+            "genreId": random.randint(1, 9)
         }
 
     @staticmethod
@@ -82,30 +78,25 @@ class DataGenerator:
             # imageUrl не URL
             {"name": "Test", "price": 150, "imageUrl": "not-a-url", "location": "MSK", "published": True, "genreId": 1},
 
-            # Пустые строки
+            # Пустые строки в имени
             {"name": "", "price": 150, "location": "MSK", "published": True, "genreId": 1}
         ]
 
     @staticmethod
     def movie_query_params() -> dict[str, Any]:
         """Query параметры для GET /movies"""
+        min_price = random.randint(1, 999999999)
+        max_price = random.randint(min_price, 999999999)
+
         return {
             "pageSize": random.randint(1, 20),
-            "pageNumber": random.randint(1, 10),
-            # "minPrice": random.randint(0, 500),
-            # "maxPrice": random.randint(100, 2000),
+            "page": random.randint(1, 10),
+            "minPrice": min_price,
+            "maxPrice": max_price,
             "locations": random.choice(["MSK", "SPB"]),
-            # "published": random.choice([True, False]),
-            "genreId": random.randint(1, 4)
+            "published": random.choice([True, False]),
+            "genreId": random.randint(1, 9)
         }
-
-    @staticmethod
-    def genre_data(name: str = None) -> dict[str, Any]:
-        """Валидные данные для жанра"""
-        return {
-            "name": name or f"{faker.word().title()} Genre"
-        }
-
     # ========== AUTH API ==========
 
     @staticmethod

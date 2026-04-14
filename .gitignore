@@ -1,5 +1,16 @@
+# Virtual environment
 venv/
+
+# Python cache
 __pycache__/
-.pytest_cache/
 *.pyc
+*.pyo
+*.pyd
+
+# Pytest
+.pytest_cache/
+
+# IDE
 .idea/
+.vscode/
+.DS_Store

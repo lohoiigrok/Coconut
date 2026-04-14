@@ -1,18 +1,17 @@
-
 import pytest
-import requests
+from requests import Session
 from constants import BASE_URL
 from customer_requester.custom_requester import CustomRequester
 from utils.data_generator import DataGenerator
 from clients.api_manager import ApiManager
-
+from types.common_types import UserData
 
 @pytest.fixture(scope="session")
 def session():
     """
     Фикстура для создания HTTP-сессии.
     """
-    http_session = requests.Session()
+    http_session = Session()
     yield http_session
     http_session.close()
 
@@ -24,7 +23,7 @@ def api_manager(session):
     return ApiManager(session)
 
 @pytest.fixture(scope="session")
-def test_user():
+def test_user() -> UserData:
     """
     Генерация случайного пользователя для тестов.
     """
@@ -41,12 +40,12 @@ def test_user():
     }
 
 @pytest.fixture(scope="session")
-def registered_user(api_manager, test_user):
+def registered_user(api_manager, test_user) -> UserData:
     """
     Фикстура для регистрации и получения данных зарегистрированного пользователя.
     """
     # Регистрируем
-    response = api_manager.auth_api.register_user()
+    response = api_manager.auth_api.register_user(test_user)
 
     response_data = response.json()
     registered_user = test_user.copy()
@@ -57,11 +56,11 @@ def registered_user(api_manager, test_user):
     api_manager.user_api.clean_up_user(registered_user["id"])
 
 @pytest.fixture(scope="session")
-def requester():
+def requester() -> CustomRequester:
     """
     Фикстура для создания экземпляра CustomRequester.
     """
-    session = requests.Session()
+    session = Session()
     return CustomRequester(session=session, base_url=BASE_URL)
 
 

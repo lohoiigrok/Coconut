@@ -1,7 +1,6 @@
-from testsam.clients.api_manager import ApiManager
 
 class TestAuthAPI:
-    def test_register_user(self, api_manager: ApiManager, test_user):
+    def test_register_user(self, api_manager, test_user):
         """"
         Тест на регистрацию пользователя.
         """
@@ -15,7 +14,7 @@ class TestAuthAPI:
         # Проверяем, что роль USER назначена по умолчанию
         assert "USER" in response_data["roles"], "Роль USER должна быть у пользователя"
 
-    def test_register_and_login_user(self, api_manager: ApiManager, registered_user):
+    def test_register_and_login_user(self, api_manager, registered_user):
         """
         Тест на регистрацию и авторизацию пользователя
         """

@@ -1,75 +1,66 @@
 import pytest
-import requests
-from testsam.constants import SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD
-from testsam.utils.data_generator import DataGenerator
-from testsam.clients.api_manager import ApiManager
-from typing import Any, Generator
-
-MovieData = dict[str, Any]
-MovieListData = list[dict[str, Any]]
+from requests import Session
+from constants import SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD
+from utils.data_generator import DataGenerator
+from clients.api_manager import ApiManager
+from typing import Generator
+from types.common_types import MovieListData, MovieData
 
 # Фикстуры по данным фильма
 @pytest.fixture
 def movie_data() -> MovieData:
-    """ Валидный фильм"""
+    """ Валидные данные для создания фильма """
     return DataGenerator.movie_data()
 
 @pytest.fixture
 def invalid_movie_data() -> MovieListData:
-    """ Валидный фильм"""
+    """ Невалидные данные для создания фильма """
     return DataGenerator.invalid_movie_data()
 
 @pytest.fixture
 def movie_query_params() -> MovieData:
-    """ Валидный фильм"""
+    """ Параметры выборки для GET-запроса """
     return DataGenerator.movie_query_params()
 
-@pytest.fixture
-def genre_data() -> MovieData:
-    return DataGenerator.genre_data()
-
-@pytest.fixture
+@pytest.fixture(scope="function")
 def created_movie(authorized_admin, movie_data) -> Generator[MovieData, None, None]:
-    response = authorized_admin.movies_api.create_movie(movie_data, expected_status=201)
+    response = authorized_admin.movies_api.create_movie(movie_data)
 
     data = response.json()
     yield data
-    movie_id = data['id']
-    authorized_admin.movies_api.clean_up_movie(movie_id)
+    authorized_admin.movies_api.clean_up_movie(data['id'])
 
 
 # Фикстуры для пользователей
 
 @pytest.fixture(scope="session")
-def session() -> Generator[requests.Session, None, None]:
+def api_manager() -> Generator[ApiManager, None, None]:
     """
-    Фикстура для создания HTTP-сессии.
+    Фикстура для паблик тестов без авториазции
     """
-    http_session = requests.Session()
-    yield http_session
+    http_session = Session()
+    manager = ApiManager(http_session)
+    manager.clear_auth()
+
+    yield ApiManager(http_session)
     http_session.close()
 
-@pytest.fixture(scope="session")
-def api_manager(session: requests.Session) -> ApiManager:
-    """
-    Фикстура для создания экземпляра ApiManager.
-    """
-    return ApiManager(session)
-
-@pytest.fixture(scope="session")
-def authorized_admin(api_manager: ApiManager) -> Generator[ApiManager, None, None]:
+@pytest.fixture(scope="function")
+def () -> Generator[ApiManager, None, None]:
     """
     Фикстура для авторизации и возращает ApiManager с токеном админа.
     """
     admin_creds = [SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD]
     # Авторизуемся под админом
-    api_manager.auth_api.authenticate(admin_creds)
+    http_session = Session()
+    manager = ApiManager(http_session)
+    manager.auth_api.authenticate(admin_creds)
 
     # Используем yield
-    yield api_manager
+    yield manager
 
     # Чистим токен (специальным методом)
-    api_manager.clear_auth()
+    manager.clear_auth()
 
 
 

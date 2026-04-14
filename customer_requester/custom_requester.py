@@ -1,10 +1,9 @@
 import json
-import requests
+from requests import Session, Response
 import logging
 import os
-from typing import Union, Iterable
+from typing import Any
 
-StatusCodes = Union[int, Iterable[int], None]
 
 
 class CustomRequester:
@@ -16,7 +15,7 @@ class CustomRequester:
         "Accept": "application/json"
     }
 
-    def __init__(self, session: requests.Session, base_url: str) -> None:
+    def __init__(self, session: Session, base_url: str) -> None:
         """
         Инициализация кастомного реквестера.
         :param session: Объект requests.Session.
@@ -28,7 +27,7 @@ class CustomRequester:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
-    def send_request(self, method: str, endpoint: str, data: dict[str, Any] | None =None, expected_status: StatusCodes=200, need_logging=True) -> requests.Response:
+    def send_request(self, method: str, endpoint: str, data: dict[str, Any] | None = None, expected_status: int = 200, need_logging = True) -> Response:
         """
         Универсальный метод для отправки запросов.
         :param method: HTTP метод (GET, POST, PUT, DELETE и т.д.).
@@ -72,7 +71,7 @@ class CustomRequester:
         self.headers.update(kwargs) # Обновляем базовые заголовки
         self.session.headers.update(self.headers) # Обновляем заголовки в текущей сессии
 
-    def log_request_and_response(self, response: requests.Response) -> None:
+    def log_request_and_response(self, response: Response) -> None:
         """
         Логирование запросов и ответов.
         :param response: Объект ответа requests.Response.
@@ -107,7 +106,7 @@ class CustomRequester:
 
             # Попытка форматировать JSON
             try:
-                response_data = json.dumps(json.loads(response.text), indent=4, ensure_ascii=False)
+                response_data = json.dumps(json.loads(response.text), indent = 4, ensure_ascii = False)
             except json.JSONDecodeError:
                 pass  # Оставляем текст, если это не JSON
 

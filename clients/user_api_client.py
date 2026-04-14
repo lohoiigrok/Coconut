@@ -1,4 +1,4 @@
-from testsam.customer_requester.custom_requester import CustomRequester
+from customer_requester.custom_requester import CustomRequester
 from requests import Response, Session
 
 class UserAPI(CustomRequester):
@@ -22,7 +22,7 @@ class UserAPI(CustomRequester):
         )
 
 
-    def delete_user(self, user_id: int, expected_status = 204) -> Response:
+    def delete_user(self, user_id: int, expected_status: int = 204) -> Response:
         """
         Удаление пользователя.
         :param user_id: ID пользователя.
@@ -40,10 +40,8 @@ class UserAPI(CustomRequester):
         """"
         Очистка данных после тестов
         :param user_id: ID пользователя.
-        :param expected_status: Ожидаемый статус-код.
         """
         return self.send_request(
             method="DELETE",
-            endpoint=f"/users/{user_id}",
-            expected_status=None # НЕ проверяем ответ
+            endpoint=f"/users/{user_id}"
         )

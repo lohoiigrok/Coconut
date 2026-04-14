@@ -1,17 +1,17 @@
-from typing import Dict, Any
-from testsam.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT
-from testsam.customer_requester.custom_requester import CustomRequester
-import requests
+from constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT
+from customer_requester.custom_requester import CustomRequester
+from requests import Session, Response
+from types.common_types import UserData
 
 class AuthAPI(CustomRequester):
     """
       Класс для работы с аутентификацией.
       """
 
-    def __init__(self, session: requests.Session) -> None:
+    def __init__(self, session: Session) -> None:
         super().__init__(session=session, base_url="https://auth.dev-cinescope.coconutqa.ru/")
 
-    def register_user(self, user_data: dict[str, Any], expected_status: int=201) -> requests.Response:
+    def register_user(self, user_data: UserData, expected_status: int = 201) -> Response:
         """
         Регистрация нового пользователя.
         :param user_data: Данные пользователя.
@@ -24,7 +24,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-    def login_user(self, login_data: dict[str, Any], expected_status: int=200) -> requests.Response:
+    def login_user(self, login_data: UserData, expected_status: int = 200) -> Response:
         """
         Авторизация пользователя.
         :param login_data: Данные для логина.
@@ -37,7 +37,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-    def authenticate(self, user_creds: list[str] | tuple[str, str]) -> dict[str, Any]:
+    def authenticate(self, user_creds: list[str] | tuple[str, str]) -> UserData:
         login_data = {
             "email": user_creds[0],
             "password": user_creds[1]
