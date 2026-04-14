@@ -3,7 +3,7 @@ class TestNegativeMoviesAPI:
         """
         Тестируем, что публичный пользователь не может создать фильм.
         """
-        response = api_manager.movies_api.create_movie(movie_data, expected_status = 401)
+        response = api_manager.movies_api.create_movie(movie_data, expected_status=401)
         response_data = response.json()
 
         assert "message" in response_data
@@ -15,7 +15,7 @@ class TestNegativeMoviesAPI:
         Тестируем, что нельзя получить несуществующий фильм.
         """
         movie_id = -10
-        response = api_manager.movies_api.get_single_movie(movie_id, expected_status = 404)
+        response = api_manager.movies_api.get_single_movie(movie_id, expected_status=404)
         response_data = response.json()
 
         assert "message" in response_data
@@ -27,13 +27,13 @@ class TestNegativeMoviesAPI:
         Тестируем, что публичный пользователь не может удалить фильм.
         """
         movie_id = created_movie['id']
-        delete_response = api_manager.movies_api.delete_movie(movie_id, expected_status = 401)
+        delete_response = api_manager.movies_api.delete_movie(movie_id, expected_status=401)
         delete_data = delete_response.json()
 
         assert "message" in delete_data
         assert "id" not in delete_data
 
-        get_response = api_manager.movies_api.get_single_movie(movie_id, expected_status = 200)
+        get_response = api_manager.movies_api.get_single_movie(movie_id, expected_status=200)
         get_data = get_response.json()
 
         assert "id" in get_data
@@ -49,7 +49,7 @@ class TestNegativeMoviesAPI:
         assert "id" in response_data1, "В ответе на создание фильма отсутствует id"
         movie_id = response_data1['id']
 
-        response2 = authorized_admin.movies_api.create_movie(movie_data, expected_status = 409)
+        response2 = authorized_admin.movies_api.create_movie(movie_data, expected_status=409)
         response_data2 = response2.json()
 
         assert "message" in response_data2
@@ -61,7 +61,7 @@ class TestNegativeMoviesAPI:
         Тестируем создание фильма из невалидных данных. (несколько разных параметров)
         """
         for bad_data in invalid_movie_data:
-            response = authorized_admin.movies_api.create_movie(bad_data, expected_status = 400)
+            response = authorized_admin.movies_api.create_movie(bad_data, expected_status=400)
             response_data = response.json()
 
             assert "message" in response_data
@@ -73,10 +73,11 @@ class TestNegativeMoviesAPI:
         """
         bad_data = movie_data.copy()
         bad_data["genreId"] = 999999
-        response = authorized_admin.movies_api.create_movie(bad_data,expected_status = 400)
+        response = authorized_admin.movies_api.create_movie(bad_data,expected_status=400)
         response_data = response.json()
 
         assert "message" in response_data
+        assert "Bad request" in response_data
         assert "id" not in response_data
 
 
@@ -84,8 +85,9 @@ class TestNegativeMoviesAPI:
         """
         Тестируем создание фильма из пустых данных на админской роли.
         """
-        response = authorized_admin.movies_api.create_movie({}, expected_status = 400)
+        response = authorized_admin.movies_api.create_movie({}, expected_status=400)
         response_data = response.json()
 
         assert "message" in response_data
+        assert "Bad request" in response_data['error"]
         assert "id" not in response_data
