@@ -44,7 +44,6 @@ def registered_user(api_manager, test_user) -> UserData:
     """
     Фикстура для регистрации и получения данных зарегистрированного пользователя.
     """
-    # Регистрируем
     response = api_manager.auth_api.register_user(test_user)
 
     response_data = response.json()
@@ -52,7 +51,6 @@ def registered_user(api_manager, test_user) -> UserData:
     registered_user["id"] = response_data["id"]
     yield registered_user
 
-    # Очищаем после теста
     api_manager.user_api.clean_up_user(registered_user["id"])
 
 @pytest.fixture(scope="session")
