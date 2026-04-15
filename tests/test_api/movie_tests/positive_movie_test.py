@@ -1,5 +1,5 @@
 class TestPositiveMoviesAPI:
-    def test_get_movies_public(self, api_manager):
+    def test_get_movies_list_by_public_role(self, api_manager):
         """
         Получаем тестовый список фильмов на публичной роли
         """
@@ -13,55 +13,94 @@ class TestPositiveMoviesAPI:
         assert isinstance(data['movies'], list)
 
 
-    def test_post_movie_auth(self, authorized_admin, movie_data):
+    def test_post_movie_by_superadmin(self, authorized_admin, movie_data):
         """
         Тестируем создание фильма на админской роли
         """
         response = authorized_admin.movies_api.create_movie(movie_data, expected_status=201)
         response_data = response.json()
-
+        
         assert "id" in response_data
-        assert isinstance(response_data["id"], int)
+        movie_id = response_data["id"]
+        
+        assert isinstance(movie_id, int)
         assert response_data["price"] == movie_data["price"]
         assert response_data["genreId"] == movie_data["genreId"]
         assert response_data["name"] == movie_data["name"]
         assert response_data["description"] == movie_data["description"] 
         assert response_data["location"] == movie_data["location"]
         assert response_data["published"] == movie_data["published"]
-
-        authorized_admin.movies_api.clean_up_movie(response_data["id"])
-
-    def test_patch_movie_auth(self,created_movie, authorized_admin, movie_data):
-        """
-        Проверяем возможность изменения данных в созданном фильме на админской роли.
-        """
-        movie_id = created_movie["id"]
-        updated_data = movie_data.copy()
-        updated_data['price'] = 999
-        update_response = authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
-        update_data = update_response.json()
-        
-        assert "id" in update_data, "В ответе отсутствует id фильма"
-        assert update_data["name"] == updated_data["name"]
-        assert update_data["price"] == 999
         
         get_response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
         get_data = get_response.json()
 
         assert "id" in get_data, "В ответе отсутствует id фильма"
         assert get_data["id"] == movie_id
-        assert get_data["price"] == 999
+        assert get_data["price"] == movie_data["price"]
+        assert get_data["genreId"] == movie_data["genreId"]
+        assert get_data["name"] == movie_data["name"]
+        assert get_data["description"] == movie_data["description"] 
+        assert get_data["location"] == movie_data["location"]
+        assert get_data["published"] == movie_data["published"]
+        
+        authorized_admin.movies_api.clean_up_movie(response_data["id"])
 
-    def test_delete_movie_auth(self, authorized_admin, movie_data):
+    def test_patch_movie_by_superadmin(self,created_movie, authorized_admin, movie_data):
+        """
+        Проверяем возможность изменения данных в созданном фильме на админской роли.
+        """
+        movie_id = created_movie["id"]
+        get_response_for_create_movie = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        get_data_for_create_movie = get_response_for_create_movie.json()
+
+        assert "id" in get_data_for_create_movie, "В ответе отсутствует id фильма"
+        assert get_data_for_create_movie["id"] == movie_id
+        assert get_data_for_create_movie["price"] == movie_data["price"]
+        assert get_data_for_create_movie["genreId"] == movie_data["genreId"]
+        assert get_data_for_create_movie["name"] == movie_data["name"]
+        assert get_data_for_create_movie["description"] == movie_data["description"] 
+        assert get_data_for_create_movie["location"] == movie_data["location"]
+        assert get_data_for_create_movie["published"] == movie_data["published"]
+        
+        updated_data = movie_data.copy()
+        updated_data['price'] = 999
+        update_response = authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
+        update_data = update_response.json()
+        
+        assert "id" in update_data, "В ответе отсутствует id фильма"
+        assert update_data["id"] == movie_id
+        assert update_data["name"] == updated_data["name"]
+        assert update_data["price"] == 999
+        
+        get_response_for_update_movie = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        get_data_for_update_movie = get_response_for_update_movie.json()
+
+        assert "id" in get_data_for_update_movie, "В ответе отсутствует id фильма"
+        assert get_data_for_update_movie["id"] == movie_id
+        assert get_data_for_update_movie["price"] == 999
+
+    def test_delete_movie_by_superadmin(self, authorized_admin, movie_data):
         """
         Тестируем удаления фильма на админской роли.
         """
         create_response = authorized_admin.movies_api.create_movie(movie_data)
         data = create_response.json()
-
+        
         assert "id" in data
         movie_id = data["id"]
 
+        get_response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        get_data = get_response.json()
+
+        assert "id" in get_data, "В ответе отсутствует id фильма"
+        assert get_data["id"] == movie_id
+        assert get_data["price"] == movie_data["price"]
+        assert get_data["genreId"] == movie_data["genreId"]
+        assert get_data["name"] == movie_data["name"]
+        assert get_data["description"] == movie_data["description"] 
+        assert get_data["location"] == movie_data["location"]
+        assert get_data["published"] == movie_data["published"]
+        
         delete_response = authorized_admin.movies_api.delete_movie(movie_id, expected_status=200)
         delete_data = delete_response.json()
 
@@ -76,7 +115,7 @@ class TestPositiveMoviesAPI:
         assert "error" in response_data
         assert "Not Found" in response_data["error"]
 
-    def test_get_filter_location(self, api_manager):
+    def test_get_filter_movies_by_location(self, api_manager):
         """
         Тестируем фильтр по локации на подборке фильма, публичная роль.
         """
@@ -90,7 +129,7 @@ class TestPositiveMoviesAPI:
         for movie in movies:
             assert movie["location"] == "MSK"
 
-    def test_pagination(self, authorized_admin):
+    def test_pagination_list_for_movies(self, authorized_admin):
         """
         Проверяем пагинацию на админской роли.
         """
@@ -105,7 +144,7 @@ class TestPositiveMoviesAPI:
         assert len(movies2) <= 5
         assert set(ids1).isdisjoint(set(ids2))
 
-    def test_complex_filter(self, authorized_admin, movie_query_params):
+    def test_complex_filter_for_movies_list(self, authorized_admin, movie_query_params):
         """
         Тестируем работу различных параметров в запросе на валидных данных query params.
         """
@@ -123,14 +162,14 @@ class TestPositiveMoviesAPI:
             assert movie["location"] == movie_query_params["locations"]
             assert movie["genreId"] == movie_query_params["genreId"]
 
-    def test_post_left_boundary_values(self, authorized_admin, movie_data):
+    def test_post_movie_with_left_boundary_values(self, authorized_admin, movie_data):
         """
         Проверяем левые (минимальные) граничные значения при создании фильма.
         """
         boundary_data = movie_data.copy()
         boundary_data["name"] = "Y"
-        boundary_data["price"] = 1  # min
-        boundary_data["genreId"] = 1  # min
+        boundary_data["price"] = 1
+        boundary_data["genreId"] = 1
         boundary_data["description"] = ""
         boundary_data["location"] = "MSK"
         boundary_data["published"] = True
@@ -139,6 +178,8 @@ class TestPositiveMoviesAPI:
         data = response.json()
 
         assert "id" in data
+        movie_id = data["id"]
+
         assert data["price"] == boundary_data["price"]
         assert data["genreId"] == boundary_data["genreId"]
         assert data["name"] == boundary_data["name"]
@@ -146,15 +187,27 @@ class TestPositiveMoviesAPI:
         assert data["location"] == boundary_data["location"]
         assert data["published"] == boundary_data["published"]
 
+        get_response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        get_data = get_response.json()
+
+        assert "id" in get_data, "В ответе отсутствует id фильма"
+        assert get_data["id"] == movie_id
+        assert get_data["price"] == boundary_data["price"]
+        assert get_data["genreId"] == boundary_data["genreId"]
+        assert get_data["name"] == boundary_data["name"]
+        assert get_data["description"] == boundary_data["description"] 
+        assert get_data["location"] == boundary_data["location"]
+        assert get_data["published"] == boundary_data["published"]
+
         authorized_admin.movies_api.clean_up_movie(data["id"])
 
-    def test_post_right_boundary_values(self, authorized_admin, movie_data):
+    def test_post_movie_with_right_boundary_values(self, authorized_admin, movie_data):
         """
         Проверяем правые (максимальные) граничные значения при создании фильма.
         """
         boundary_data = movie_data.copy()
-        boundary_data["price"] = 999999999  # max
-        boundary_data["genreId"] = 10 # max
+        boundary_data["price"] = 999999999
+        boundary_data["genreId"] = 10
         boundary_data["location"] = "SPB"
         boundary_data["published"] = False
 
@@ -162,10 +215,24 @@ class TestPositiveMoviesAPI:
         data = response.json()
 
         assert "id" in data
+        movie_id = data["id"]
+        
+        assert data["name"] == boundary_data["name"]
         assert data["price"] == boundary_data["price"]
         assert data["genreId"] == boundary_data["genreId"]
-        assert data["name"] == boundary_data["name"]
         assert data["location"] == boundary_data["location"]
         assert data["published"] == boundary_data["published"]
 
+        get_response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        get_data = get_response.json()
+
+        assert "id" in get_data, "В ответе отсутствует id фильма"
+        assert get_data["id"] == movie_id
+        assert get_data["price"] == boundary_data["price"]
+        assert get_data["genreId"] == boundary_data["genreId"]
+        assert get_data["name"] == boundary_data["name"]
+        assert get_data["description"] == boundary_data["description"] 
+        assert get_data["location"] == boundary_data["location"]
+        assert get_data["published"] == boundary_data["published"]
+        
         authorized_admin.movies_api.clean_up_movie(data["id"])
