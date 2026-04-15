@@ -68,8 +68,8 @@ class CustomRequester:
         :param session: Объект requests.Session, предоставленный API-классом.
         :param kwargs: Дополнительные заголовки.
         """
-        self.headers.update(kwargs) # Обновляем базовые заголовки
-        self.session.headers.update(self.headers) # Обновляем заголовки в текущей сессии
+        self.headers.update(kwargs)
+        self.session.headers.update(self.headers)
 
     def log_request_and_response(self, response: Response) -> None:
         """
@@ -90,7 +90,7 @@ class CustomRequester:
                     body = request.body.decode('utf-8')
                 body = f"-d '{body}' \n" if body != '{}' else ''
 
-            # Логируем запрос
+
             self.logger.info(f"\n{'=' * 40} REQUEST {'=' * 40}")
             self.logger.info(
                 f"{GREEN}{full_test_name}{RESET}\n"
@@ -99,18 +99,17 @@ class CustomRequester:
                 f"{body}"
             )
 
-            # Обрабатываем ответ
+
             response_status = response.status_code
             is_success = response.ok
             response_data = response.text
 
-            # Попытка форматировать JSON
+
             try:
                 response_data = json.dumps(json.loads(response.text), indent = 4, ensure_ascii = False)
             except json.JSONDecodeError:
-                pass  # Оставляем текст, если это не JSON
+                pass
 
-            # Логируем ответ
             self.logger.info(f"\n{'=' * 40} RESPONSE {'=' * 40}")
             if not is_success:
                 self.logger.info(
