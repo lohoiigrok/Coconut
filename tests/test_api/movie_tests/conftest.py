@@ -5,7 +5,6 @@ from utils.data_generator import DataGenerator
 from clients.api_manager import ApiManager
 from types.common_types import MovieListData, MovieData
 
-# Фикстуры по данным фильма
 @pytest.fixture
 def movie_data() -> MovieData:
     """ Валидные данные для создания фильма """
@@ -29,9 +28,6 @@ def created_movie(authorized_admin, movie_data) -> Generator[MovieData, None, No
     yield data
     authorized_admin.movies_api.clean_up_movie(data['id'])
 
-
-# Фикстуры для пользователей
-
 @pytest.fixture(scope="session")
 def api_manager() -> ApiManager:
     """
@@ -50,15 +46,12 @@ def authorized_admin() -> ApiManager:
     Фикстура для авторизации и возращает ApiManager с токеном админа.
     """
     admin_creds = [SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD]
-    # Авторизуемся под админом
     http_session = Session()
     manager = ApiManager(http_session)
     manager.auth_api.authenticate(admin_creds)
 
-    # Используем yield
     yield manager
 
-    # Чистим токен (специальным методом)
     manager.clear_auth()
 
 
