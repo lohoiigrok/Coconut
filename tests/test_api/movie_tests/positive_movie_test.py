@@ -22,12 +22,12 @@ class TestPositiveMoviesAPI:
 
         assert "id" in response_data
         assert isinstance(response_data["id"], int)
-        assert movie_data["price"] == response_data["price"]
-        assert movie_data["genreId"] == response_data["genreId"]
-        assert movie_data["name"] == response_data["name"]
-        assert movie_data["description"] == response_data["description"]
-        assert movie_data["location"] == response_data["location"]
-        assert movie_data["published"] == response_data["published"]
+        assert response_data["price"] == movie_data["price"]
+        assert response_data["genreId"] == movie_data["genreId"]
+        assert response_data["name"] == movie_data["name"]
+        assert response_data["description"] == movie_data["description"] 
+        assert response_data["location"] == movie_data["location"]
+        assert response_data["published"] == movie_data["published"]
 
         authorized_admin.movies_api.clean_up_movie(response_data["id"])
 
@@ -38,19 +38,19 @@ class TestPositiveMoviesAPI:
         movie_id = created_movie["id"]
         updated_data = movie_data.copy()
         updated_data['price'] = 999
-        response1 = authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
-        data1 = response.json()
+        update_response = authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
+        update_data = update_response.json()
         
-        assert "id" in data1, "В ответе отсутствует id фильма"
-        assert data1["name"] == updated_data["name"]
-        assert data1["price"] == 999
+        assert "id" in update_data, "В ответе отсутствует id фильма"
+        assert update_data["name"] == updated_data["name"]
+        assert update_data["price"] == 999
         
-        response2 = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
-        data2 = response.json()
+        get_response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
+        get_data = get_response.json()
 
-        assert "id" in data2, "В ответе отсутствует id фильма"
-        assert data2["id"] == movie_id
-        assert data2["price"] == 999
+        assert "id" in get_data, "В ответе отсутствует id фильма"
+        assert get_data["id"] == movie_id
+        assert get_data["price"] == 999
 
     def test_delete_movie_auth(self, authorized_admin, movie_data):
         """
