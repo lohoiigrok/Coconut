@@ -108,8 +108,8 @@ class TestNegativeMoviesAPI:
         response = authorized_admin.movies_api.create_movie(bad_data,expected_status=400)
         response_data = response.json()
 
-        assert "message" in response_data
-        assert "Bad Request" in response_data["message"]
+        assert "error" in response_data
+        assert "Bad Request" in response_data["error"]
         assert "id" not in response_data
 
     def test_post_movie_empty_data_by_superadmin(self, authorized_admin):
