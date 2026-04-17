@@ -57,6 +57,30 @@ class DataGenerator:
         }
 
     @staticmethod
+    def min_boundary_movie_data(name: str = None) -> dict[str, Any]:
+        """Минимальные граничные данные для POST/PATCH"""
+        return {
+            "name": f"{uuid.uuid4().hex[:1]}",
+            "description": "",
+            "price": 1,
+            "location": "MSK",
+            "published": True,
+            "genreId": 1
+        }
+
+    @staticmethod
+    def max_boundary_movie_data(name: str = None) -> dict[str, Any]:
+        """Максимальные граничные данные для POST/PATCH"""
+        return {
+            "name": name or f"Movie_{uuid.uuid4().hex[:12]}",
+            "description": faker.sentence(),
+            "price": 999999999,
+            "location": "SPB",
+            "published": False,
+            "genreId": 10
+        }
+        
+    @staticmethod
     def invalid_movie_data() -> List[dict[str, Any]]:
         """Невалидные данные для негативных тестов"""
         return [
