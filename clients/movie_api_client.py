@@ -66,6 +66,6 @@ class MoviesApi(CustomRequester):
     def clean_up_movie(self, movie_id: int) -> None:
         """Очистка фильма ПОСЛЕ теста."""
         try:
-           self.delete_movie(movie_id, expected_status = 200)
+           self.delete_movie(movie_id, expected_status=200)
         except Exception as e:
             self.logger.warning(f"Cleanup failed for movie {movie_id}: {e}")
