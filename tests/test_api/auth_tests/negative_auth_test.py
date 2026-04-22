@@ -1,30 +1,31 @@
+import pytest
+from models.models import ErrorResponseModel
 
 class TestNegativeAuthAPI:
-
-    def test_invalid_pass_auth(self, api_manager, test_user):
-        invalid_login_data = {"email": test_user["email"], "password": "Dsdjods32d"}
+    def test_invalid_pass_auth(self, api_manager, registered_user):
+        invalid_login_data = {"email": registered_user["email"], "password": registered_user["password"] + "Dsdjods32d"}
         response = api_manager.auth_api.login_user(invalid_login_data, expected_status = 401)
         response_data = response.json()
-        # Проверки
-        assert "message" in response_data
-        assert "error" in response_data
+
+        ErrorResponseModel(**response_data)
         assert "accessToken" not in response_data, "Токен доступа выдало при неправильных данных"
 
-
-    def test_invalid_email_auth(self, api_manager, test_user):
-        invalid_login_data = {"email": "test_@mail.ru", "password": test_user["password"]}
+    def test_invalid_email_auth(self, api_manager, registered_user):
+        invalid_login_data = {"email": "test_@mail.ru", "password": registered_user["password"]}
         response = api_manager.auth_api.login_user(invalid_login_data, expected_status = 401)
         response_data = response.json()
-        # Проверки
-        assert "accessToken" not in response_data, "Токен доступа выдало при неправильных данных"
-        assert "message" in response_data
-        assert "error" in response_data
 
-    def test_empty_body_auth(self, api_manager):
-        invalid_login_data = {}
-        response = api_manager.auth_api.login_user(invalid_login_data, expected_status = 401)
-        response_data = response.json()
-        # Проверки
+        ErrorResponseModel(**response_data)
         assert "accessToken" not in response_data, "Токен доступа выдало при неправильных данных"
-        assert "message" in response_data
-        assert "error" in response_data
+
+    @pytest.mark.parametrize("bad_data,expected_status",
+    [({"email": "test@test.com"}, 401),
+     ({"password": "Valid1pass"}, 401),
+     ({}, 401)
+     ], ids= ["missing_password", "missing_email", "empty_body"])
+    def test_register_missing_required_fields(self, api_manager, bad_data, expected_status):
+        response = api_manager.auth_api.login_user(bad_data, expected_status)
+        response_data = response.json()
+
+        ErrorResponseModel(**response_data)
+        assert "accessToken" not in response_data, "Токен доступа выдало при неправильных данных"

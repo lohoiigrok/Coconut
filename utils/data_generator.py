@@ -45,6 +45,18 @@ class DataGenerator:
 
         return ''.join(password)
 
+    @staticmethod
+    def user_data(email: str = None) -> dict[str, Any]:
+        """Данные для регистрации/создания пользователя"""
+        password = DataGenerator.generate_random_password()
+        return {
+            "email": email or DataGenerator.generate_random_email(),
+            "fullName": DataGenerator.generate_random_name(),
+            "password": password,
+            "passwordRepeat": password,
+            "roles": ["USER"]
+        }
+
     # ========== MOVIES API ==========
 
     @staticmethod
@@ -57,6 +69,30 @@ class DataGenerator:
             "location": random.choice(["MSK", "SPB"]),
             "published": random.choice([True, False]),
             "genreId": random.randint(1, 9)
+        }
+
+    @staticmethod
+    def min_boundary_movie_data(name: str = None) -> dict[str, Any]:
+        """Минимальные граничные данные для POST/PATCH"""
+        return {
+            "name": f"{uuid.uuid4().hex[:1]}",
+            "description": "",
+            "price": 1,
+            "location": "MSK",
+            "published": True,
+            "genreId": 1
+        }
+
+    @staticmethod
+    def max_boundary_movie_data(name: str = None) -> dict[str, Any]:
+        """Максимальные граничные данные для POST/PATCH"""
+        return {
+            "name": name or f"Movie_{uuid.uuid4().hex[:12]}",
+            "description": faker.sentence(),
+            "price": 999999999,
+            "location": "SPB",
+            "published": False,
+            "genreId": 10
         }
 
     @staticmethod
@@ -97,13 +133,27 @@ class DataGenerator:
             "published": random.choice([True, False]),
             "genreId": random.randint(1, 9)
         }
-    # ========== AUTH API ==========
+
+    # ========== DB API ==========
+
+    """Добавим метод в DataGenerator 
+    который сразу делает рандомные данные
+    которые можно сразу передать в метод 
+    создания юзера через БД"""
 
     @staticmethod
-    def user_data(email: str = None) -> dict[str, Any]:
-        """Данные для регистрации/создания пользователя"""
+    def generate_user_data() -> dict:
+        """Генерирует данные для тестового польозователя"""
+        from uuid import uuid4
+
         return {
-            "email": email or DataGenerator.generate_random_email(),
-            "name": DataGenerator.generate_random_name(),
-            "password": DataGenerator.generate_random_password()
+            'id': f'{uuid4()}', # генерируем UUID как строку
+            'email': DataGenerator.generate_random_email(),
+            'full_name': DataGenerator.generate_random_name(),
+            'password': DataGenerator.generate_random_password(),
+            'created_at': datetime.datetime.now(),
+            'updated_at': datetime.datetime.now(),
+            'verified': False,
+            'banned': False,
+            'roles': '{USER}'
         }

@@ -5,7 +5,6 @@ import os
 from typing import Any
 
 
-
 class CustomRequester:
     """
     Кастомный реквестер для стандартизации и упрощения отправки HTTP-запросов.
@@ -99,12 +98,10 @@ class CustomRequester:
                 f"{body}"
             )
 
-            # Обрабатываем ответ
             response_status = response.status_code
             is_success = response.ok
             response_data = response.text
 
-            # Попытка форматировать JSON
             try:
                 response_data = json.dumps(json.loads(response.text), indent = 4, ensure_ascii = False)
             except json.JSONDecodeError:

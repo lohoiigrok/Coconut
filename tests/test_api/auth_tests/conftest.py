@@ -1,66 +1,48 @@
 import pytest
-from requests import Session
-from constants import BASE_URL
-from customer_requester.custom_requester import CustomRequester
 from utils.data_generator import DataGenerator
-from clients.api_manager import ApiManager
 from types.common_types import UserData
 
-@pytest.fixture(scope="session")
-def session():
-    """
-    Фикстура для создания HTTP-сессии.
-    """
-    http_session = Session()
-    yield http_session
-    http_session.close()
 
-@pytest.fixture(scope="session")
-def api_manager(session):
+@pytest.fixture(scope="function")
+def auth_user_data() -> UserData:
     """
-    Фикстура для создания экземпляра ApiManager.
+    Данные нового пользователя в формате /auth/register.
+    Отдельная фикстура — не конфликтует с глобальной test_user.
     """
-    return ApiManager(session)
-
-@pytest.fixture(scope="session")
-def test_user() -> UserData:
-    """
-    Генерация случайного пользователя для тестов.
-    """
-    random_email = DataGenerator.generate_random_email()
-    random_name = DataGenerator.generate_random_name()
     random_password = DataGenerator.generate_random_password()
-
     return {
-        "email": random_email,
-        "fullName": random_name,
+        "email": DataGenerator.generate_random_email(),
+        "fullName": DataGenerator.generate_random_name(),
         "password": random_password,
         "passwordRepeat": random_password,
-        "roles": ["USER"]
+        "roles": ["USER"],
     }
 
-@pytest.fixture(scope="session")
-def registered_user(api_manager, test_user) -> UserData:
-    """
-    Фикстура для регистрации и получения данных зарегистрированного пользователя.
-    """
-    # Регистрируем
-    response = api_manager.auth_api.register_user(test_user)
+@pytest.fixture(scope="function")
+def admin_user_data(auth_user_data) -> dict:
+    data = auth_user_data.copy()
+    data.update({
+        "verified": True,
+        "banned": False,
+    })
+    return data
 
+@pytest.fixture(scope="function")
+def registered_user(api_manager, auth_user_data) -> UserData:
+    """
+    Регистрирует пользователя через /auth/register.
+    После теста удаляет его через admin user_api.
+    """
+    response = api_manager.user_api.create_user(auth_user_data)
     response_data = response.json()
-    registered_user = test_user.copy()
-    registered_user["id"] = response_data["id"]
-    yield registered_user
 
-    # Очищаем после теста
-    api_manager.user_api.clean_up_user(registered_user["id"])
+    registered = auth_user_data.copy()
+    registered["id"] = response_data["id"]
 
-@pytest.fixture(scope="session")
-def requester() -> CustomRequester:
-    """
-    Фикстура для создания экземпляра CustomRequester.
-    """
-    session = Session()
-    return CustomRequester(session=session, base_url=BASE_URL)
+    yield registered
 
-
+    try:
+        api_manager.user_api.clean_up_user(registered["id"])
+    except ValueError:
+        # Пользователь уже удалён / нет такого endpoint — не падаем
+        pass

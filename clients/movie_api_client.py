@@ -1,5 +1,5 @@
 from requests import Response, Session
-from constants import MOVIES_ENDPOINT, MOVIE_BASE_URL
+from config import MOVIES_ENDPOINT, MOVIE_BASE_URL
 from customer_requester.custom_requester import CustomRequester
 from typing import Optional
 from types.common_types import MovieData
