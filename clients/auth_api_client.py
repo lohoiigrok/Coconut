@@ -1,0 +1,40 @@
+from customer_requester.custom_requester import CustomRequester
+from requests import Session, Response
+from types.common_types import UserData
+from config import LOGIN_ENDPOINT
+
+class AuthApi(CustomRequester):
+    """
+      Класс для работы с аутентификацией.
+      """
+
+    def __init__(self, session: Session) -> None:
+        super().__init__(session=session, base_url="https://auth.dev-cinescope.coconutqa.ru/")
+
+    def login_user(self, login_data: UserData, expected_status: int = 200) -> Response:
+        """
+        Авторизация пользователя.
+        :param login_data: Данные для логина.
+        :param expected_status: Ожидаемый статус-код.
+        """
+        return self.send_request(
+            method="POST",
+            endpoint=LOGIN_ENDPOINT,
+            data=login_data,
+            expected_status=expected_status
+        )
+
+    def authenticate(self, user_creds: list[str] | tuple[str, str]) -> UserData:
+        login_data = {
+            "email": user_creds[0],
+            "password": user_creds[1]
+        }
+
+        response = self.login_user(login_data).json()
+
+        if "accessToken" not in response:
+            raise KeyError("token is missing")
+        token = response["accessToken"]
+        self._update_session_headers(**{"Authorization": "Bearer " + token})
+
+        return response

@@ -1,0 +1,171 @@
+import random
+import uuid
+import string
+from faker import Faker
+from typing import List, Any
+
+faker = Faker()
+
+
+class DataGenerator:
+
+
+    # ========== REGISTER API ==========
+
+
+    @staticmethod
+    def generate_random_email() -> str:
+        """Генерация случайного email"""
+        random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        return f"kek{random_string}@gmail.com"
+
+    @staticmethod
+    def generate_random_name() -> str:
+        """Генерация случайного имени"""
+        return f"{faker.first_name()} {faker.last_name()}"
+
+    @staticmethod
+    def generate_random_password() -> str:
+        """
+        Генерация пароля, соответствующего требованиям документации
+        """
+        # Гарантируем наличие хотя бы одной буквы и одной цифры
+        letters = random.choice(string.ascii_letters)
+        digits = random.choice(string.digits)
+
+        # Дополняем пароль случайными символами из допустимого набора
+        special_chars = "?@#$%^&*|:"
+        all_chars = string.ascii_letters + string.digits + special_chars
+        remaining_length = random.randint(6, 18)
+        remaining_chars = ''.join(random.choices(all_chars, k=remaining_length))
+
+        # Перемешиваем пароль для рандомизации
+        password = list(letters + digits + remaining_chars)
+        random.shuffle(password)
+
+        return ''.join(password)
+
+    @staticmethod
+    def user_data(email: str = None) -> dict[str, Any]:
+        """Данные для регистрации/создания пользователя"""
+        password = DataGenerator.generate_random_password()
+        return {
+            "email": email or DataGenerator.generate_random_email(),
+            "fullName": DataGenerator.generate_random_name(),
+            "password": password,
+            "passwordRepeat": password,
+            "roles": ["USER"]
+        }
+
+    # ========== MOVIES API ==========
+
+    @staticmethod
+    def movie_data(name: str = None) -> dict[str, Any]:
+        """Валидные данные для POST/PATCH"""
+        return {
+            "name": name or f"Movie_{uuid.uuid4().hex[:12]}",
+            "description": faker.sentence(),
+            "price": random.randint(1, 999999999),
+            "location": random.choice(["MSK", "SPB"]),
+            "published": random.choice([True, False]),
+            "genreId": random.randint(1, 9)
+        }
+
+    @staticmethod
+    def min_boundary_movie_data(name: str = None) -> dict[str, Any]:
+        """Минимальные граничные данные для POST/PATCH"""
+        return {
+            "name": f"{uuid.uuid4().hex[:1]}",
+            "description": "",
+            "price": 1,
+            "location": "MSK",
+            "published": True,
+            "genreId": 1
+        }
+
+    @staticmethod
+    def max_boundary_movie_data(name: str = None) -> dict[str, Any]:
+        """Максимальные граничные данные для POST/PATCH"""
+        return {
+            "name": name or f"Movie_{uuid.uuid4().hex[:12]}",
+            "description": faker.sentence(),
+            "price": 999999999,
+            "location": "SPB",
+            "published": False,
+            "genreId": 10
+        }
+
+    @staticmethod
+    def invalid_movie_data() -> List[dict[str, Any]]:
+        """Невалидные данные для негативных тестов"""
+        return [
+            # Без name (обязательное)
+            {"price": 150, "location": "MSK", "published": True, "genreId": 1},
+
+            # Отрицательная цена
+            {"name": "Test", "price": -10, "location": "MSK", "published": True, "genreId": 1},
+
+            # Невалидная локация
+            {"name": "Test", "price": 150, "location": "NYC", "published": True, "genreId": 1},
+
+            # genreId не integer
+            {"name": "Test", "price": 150, "location": "MSK", "published": True, "genreId": "abc"},
+
+            # imageUrl не URL
+            {"name": "Test", "price": 150, "imageUrl": "not-a-url", "location": "MSK", "published": True, "genreId": 1},
+
+            # Пустые строки в имени
+            {"name": "", "price": 150, "location": "MSK", "published": True, "genreId": 1}
+        ]
+
+    @staticmethod
+    def invalid_movie_data_ids() -> List[str]:
+        """Ids для невалидных данных"""
+        return [
+            "Без name (обязательное)",
+            "Отрицательная цена",
+            "Невалидная локация",
+            "genreId не integer",
+            "imageUrl не URL",
+            "Пустые строки в имени"
+        ]
+
+    @staticmethod
+    def movie_query_params() -> dict[str, Any]:
+        """Query параметры для GET /movies"""
+        min_price = random.randint(1, 999999999)
+        max_price = random.randint(min_price, 999999999)
+
+        return {
+            "pageSize": random.randint(1, 20),
+            "page": random.randint(1, 10),
+            "minPrice": min_price,
+            "maxPrice": max_price,
+            "locations": random.choice(["MSK", "SPB"]),
+            "published": random.choice([True, False]),
+            "genreId": random.randint(1, 9)
+        }
+
+    # ========== DB API ==========
+
+    """Добавим метод в DataGenerator 
+    который сразу делает рандомные данные
+    которые можно сразу передать в метод 
+    создания юзера через БД"""
+
+    @staticmethod
+    def generate_user_data() -> dict:
+        """Генерирует данные для тестового польозователя"""
+        from uuid import uuid4
+
+        return {
+            'id': f'{uuid4()}', # генерируем UUID как строку
+            'email': DataGenerator.generate_random_email(),
+            'full_name': DataGenerator.generate_random_name(),
+            'password': DataGenerator.generate_random_password(),
+            'created_at': datetime.datetime.now(),
+            'updated_at': datetime.datetime.now(),
+            'verified': False,
+            'banned': False,
+            'roles': '{USER}'
+        }
