@@ -22,10 +22,8 @@ class TestPositiveMoviesAPI:
         response = authorized_admin.movies_api.create_movie(movie_data, expected_status=201)
         response_data = response.json()
 
-
         movie = MovieResponseModel(**response_data)
         movie_id = response_data["id"]
-
 
         check.equal(movie.price, movie_data["price"])
         check.equal(movie.genreId, movie_data["genreId"])
@@ -34,13 +32,10 @@ class TestPositiveMoviesAPI:
         check.equal(movie.location, movie_data["location"])
         check.equal(movie.published, movie_data["published"])
 
-
         get_response = authorized_admin.movies_api.get_single_movie(movie_id, expected_status=200)
         get_data = get_response.json()
 
-
         get_movie = MovieResponseModel(**get_data)
-
 
         check.equal(get_movie.price, movie_data["price"])
         check.equal(get_movie.genreId, movie_data["genreId"])
@@ -48,7 +43,6 @@ class TestPositiveMoviesAPI:
         check.equal(get_movie.description, movie_data["description"])
         check.equal(get_movie.location, movie_data["location"])
         check.equal(get_movie.published, movie_data["published"])
-
 
         authorized_admin.movies_api.clean_up_movie(response_data["id"])
 
@@ -62,7 +56,6 @@ class TestPositiveMoviesAPI:
         updated_data['price'] = 999
         update_response = authorized_admin.movies_api.update_movie(movie_id, updated_data, expected_status=200)
         update_data = update_response.json()
-
 
         update_movie = MovieResponseModel(**update_data)
 
@@ -197,6 +190,5 @@ class TestPositiveMoviesAPI:
         assert get_movie.description == max_boundary_movie_data["description"]
         assert get_movie.location == max_boundary_movie_data["location"]
         assert get_movie.published == max_boundary_movie_data["published"]
-
 
         authorized_admin.movies_api.clean_up_movie(data["id"])

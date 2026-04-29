@@ -1,6 +1,5 @@
 import pytest
 import pytest_check as check
-
 from utils.data_generator import DataGenerator
 from models.models import ErrorResponseModel, MovieResponseModel
 
@@ -12,7 +11,6 @@ class TestNegativeMoviesAPI:
         response = api_manager.movies_api.create_movie(movie_data, expected_status=401)
         response_data = response.json()
         noncreated_movie = ErrorResponseModel(**response_data)
-
 
         check.is_in("Unauthorized", str(noncreated_movie.message))
 
@@ -35,11 +33,9 @@ class TestNegativeMoviesAPI:
         MovieResponseModel(**created_movie)
         movie_id = created_movie['id']
 
-
         get_response = api_manager.movies_api.get_single_movie(movie_id, expected_status=200)
         get_data = get_response.json()
         get_movie = MovieResponseModel(**get_data)
-
 
         assert get_movie.id == movie_id
         assert get_movie.price == created_movie["price"]

@@ -65,4 +65,4 @@ class UserApi(CustomRequester):
             self.delete_user(user_id, expected_status=200)
         except ValueError:
             # Для ситуаций где пользователь уже удален или не найден (404)
-            return
+            pass

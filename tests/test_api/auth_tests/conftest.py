@@ -41,8 +41,5 @@ def registered_user(api_manager, auth_user_data) -> UserData:
 
     yield registered
 
-    try:
-        api_manager.user_api.clean_up_user(registered["id"])
-    except ValueError:
-        # Пользователь уже удалён / нет такого endpoint — не падаем
-        pass
+    api_manager.user_api.clean_up_user(registered["id"])
+
