@@ -119,6 +119,18 @@ class DataGenerator:
         ]
 
     @staticmethod
+    def invalid_movie_data_ids() -> List[str]:
+        """Невалидные данные для негативных тестов"""
+        return [
+            "Без name",
+            "Отрицательная цена",
+            "Невалидная локация",
+            "genreId не integer",
+            "imageUrl не URL",
+            "Пустые строки в имени",
+        ]
+
+    @staticmethod
     def movie_query_params() -> dict[str, Any]:
         """Query параметры для GET /movies"""
         min_price = random.randint(1, 999999999)
