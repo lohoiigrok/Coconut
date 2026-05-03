@@ -4,7 +4,6 @@ from project.db_models.movie import MovieDBModel
 
 class DBHelper:
     """Класс с методами для работы с БД в тестах"""
-
     def __init__(self, db_session: Session):
         self.db_session = db_session
 

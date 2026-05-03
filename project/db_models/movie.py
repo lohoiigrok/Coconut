@@ -1,10 +1,8 @@
 from sqlalchemy import Column, String, Float, Boolean, DateTime
 from project.db_models.base import Base
-from typing import Dict, Any
+from project.db_models.mixin import DictMixin
 
-
-
-class MovieDBModel(Base):
+class MovieDBModel(Base, DictMixin):
     """Модель фильма"""
 
     __tablename__ = 'movies'
@@ -19,21 +17,6 @@ class MovieDBModel(Base):
     rating = Column(Float)
     genre_id = Column(String)
     created_at = Column(DateTime)
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Преобразование в словарь"""
-        return {
-            'id': self.id,
-            'name': self.name,
-            'price': self.price,
-            'description': self.description,
-            'image_url': self.image_url,
-            'location': self.location,
-            'published': self.published,
-            'rating': self.rating,
-            'genre_id': self.genre_id,
-            'created_at': self.created_at
-        }
 
     def __repr__(self):
         return f"<Movie(id='{self.id}', name='{self.name}', price={self.price})>"
