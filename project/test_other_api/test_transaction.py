@@ -3,14 +3,11 @@ from sqlalchemy.orm import Session
 from project.db_models.models import AccountTransactionTemplate
 import pytest
 
-
 def test_accounts_transaction_template(db_session: Session):
     stan = AccountTransactionTemplate(user=f"Stan_{DataGenerator.generate_random_name()}", balance=1000)
     bob = AccountTransactionTemplate(user=f"Bob_{DataGenerator.generate_random_name()}", balance=500)
 
-    # Добавляем записи в сессию
     db_session.add_all([stan, bob])
-    # Фиксируем изменения в базе данных
     db_session.commit()
 
     def transfer_money(session, from_account, to_account, amount):
