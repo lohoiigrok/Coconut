@@ -1,9 +1,9 @@
 import pytest
 from requests import Session
 from clients.api_manager import ApiManager
-from roles import User
+from roles import User, Roles
 from config import SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD
-from roles import Roles
+from types.parametrized_constants import ROLE_TO_FIXTURE
 from utils.data_generator import DataGenerator
 
 
@@ -90,3 +90,16 @@ def authorized_user(authorized_admin: ApiManager, creation_user_data: dict) -> A
 
     manager.clear_auth()
     http_session.close()
+
+@pytest.fixture
+def get_client_by_role(request):
+    def _get_client(role):
+        fixture_name = ROLE_TO_FIXTURE[role]
+        return request.getfixturevalue(fixture_name)
+
+    return _get_client
+
+@pytest.fixture
+def client_by_role(request):
+    fixture_name = ROLE_TO_FIXTURE[request.param]
+    return request.getfixturevalue(fixture_name)

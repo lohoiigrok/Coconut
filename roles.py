@@ -1,4 +1,4 @@
-from testsam.clients.api_manager import ApiManager
+from clients.api_manager import ApiManager
 from enum import Enum
 
 class Roles(Enum):

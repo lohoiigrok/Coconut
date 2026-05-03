@@ -1,7 +1,5 @@
 import pytest
-from _pytest.fixtures import FixtureRequest
 from types.parametrized_constants import (
-    ROLE_TO_FIXTURE,
     LOGIN_VALID_BY_ROLE,
     LOGIN_VALID_BY_ROLE_IDS,
     LOGIN_INVALID_PASSWORD_BY_ROLE,
@@ -15,29 +13,26 @@ from roles import Roles
 from models.models import ErrorResponseModel
 
 class TestRolesAuth:
-    @pytest.mark.parametrize("role, expected_status",
+    @pytest.mark.parametrize("client_by_role",
         LOGIN_VALID_BY_ROLE,
-        LOGIN_VALID_BY_ROLE_IDS,
+        indirect=True,
+        ids=LOGIN_VALID_BY_ROLE_IDS
     )
     def test_login_with_valid_credentials_by_role(
         self,
-        request: FixtureRequest,
-        role: Roles,
-        expected_status: int,
+        client_by_role,
         registered_user: dict,
     ):
         """
         /auth/login с валидными данными.
         PUBLIC и USER, SUPER_ADMIN всем возращается токен.
         """
-        client = request.getfixturevalue(ROLE_TO_FIXTURE[role])
-
         login_data = {
                 "email": registered_user["email"],
                 "password": registered_user["password"],
             }
 
-        response = client.auth_api.login_user(login_data, expected_status=expected_status)
+        response = client_by_role.auth_api.login_user(login_data, expected_status = 200)
         data = response.json()
 
         assert "accessToken" in data
@@ -47,11 +42,11 @@ class TestRolesAuth:
     @pytest.mark.parametrize(
         "role, expected_status",
         LOGIN_INVALID_PASSWORD_BY_ROLE,
-        LOGIN_INVALID_PASSWORD_BY_ROLE_IDS
+        ids=LOGIN_INVALID_PASSWORD_BY_ROLE_IDS
     )
     def test_login_with_invalid_password_by_role(
         self,
-        request: FixtureRequest,
+        get_client_by_role,
         role: Roles,
         expected_status: int,
         registered_user: dict,
@@ -59,7 +54,7 @@ class TestRolesAuth:
         """
         /auth/login с неверным паролем даёт 401 для любой роли вызвавшего клиента.
         """
-        client = request.getfixturevalue(ROLE_TO_FIXTURE[role])
+        client = get_client_by_role(role)
 
         login_data = {
             "email": registered_user["email"],
@@ -82,7 +77,7 @@ class TestRolesAuth:
     )
     def test_superadmin_can_create_user(
         self,
-        request: FixtureRequest,
+        get_client_by_role,
         role: Roles,
         expected_status: int,
         admin_user_data: dict,
@@ -90,7 +85,7 @@ class TestRolesAuth:
         """
         SUPER_ADMIN может создать пользователя через /users (201).
         """
-        client = request.getfixturevalue(ROLE_TO_FIXTURE[role])
+        client = get_client_by_role(role)
 
         response = client.user_api.create_user_admin(
             admin_user_data,
@@ -112,7 +107,7 @@ class TestRolesAuth:
     )
     def test_non_superadmin_cannot_create_user(
         self,
-        request: FixtureRequest,
+        get_client_by_role,
         role: Roles,
         expected_status: int,
         admin_user_data: dict,
@@ -120,7 +115,7 @@ class TestRolesAuth:
         """
         PUBLIC и USER не могут создавать пользователей (401/403).
         """
-        client = request.getfixturevalue(ROLE_TO_FIXTURE[role])
+        client = get_client_by_role(role)
 
         response = client.user_api.create_user_admin(
             admin_user_data,
@@ -130,6 +125,6 @@ class TestRolesAuth:
 
         error_response = ErrorResponseModel(**data)
         assert (
-            "Unauthorized" in str(error_response.error)
+            "Unauthorized" in str(error_response.message)
             or "Forbidden resource" in str(error_response.message)
         )
