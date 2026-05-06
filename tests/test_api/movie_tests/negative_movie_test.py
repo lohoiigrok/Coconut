@@ -59,12 +59,12 @@ class TestNegativeMoviesAPI:
         with allure.step("Проверяем, что фильм существует до удаления"):
             get_movie = MovieResponseModel(**get_data)
             assert get_movie.id == movie_id
-            check.is_in(get_movie.price, created_movie["price"])
-            check.is_in(get_movie.genreId, created_movie["genreId"])
-            check.is_in(get_movie.name, created_movie["name"])
-            check.is_in(get_movie.description, created_movie["description"])
-            check.is_in(get_movie.location, created_movie["location"])
-            check.is_in(get_movie.published, created_movie["published"])
+            check.equal(get_movie.price, created_movie["price"])
+            check.equal(get_movie.genreId, created_movie["genreId"])
+            check.equal(get_movie.name, created_movie["name"])
+            check.equal(get_movie.description, created_movie["description"])
+            check.equal(get_movie.location, created_movie["location"])
+            check.equal(get_movie.published, created_movie["published"])
 
         with allure.step("Удаляем фильм"):
             delete_response = api_manager.movies_api.delete_movie(movie_id, expected_status=401)
@@ -102,12 +102,12 @@ class TestNegativeMoviesAPI:
         with allure.step("Проверяем, что фильм появился в БД"):
             get_movie = MovieResponseModel(**get_data)
             assert get_movie.id == movie_id
-            check.is_in(get_movie.price, create_data["price"])
-            check.is_in(get_movie.genreId, create_data["genreId"])
-            check.is_in(get_movie.name, create_data["name"])
-            check.is_in(get_movie.description, create_data["description"])
-            check.is_in(get_movie.location, create_data["location"])
-            check.is_in(get_movie.published, create_data["published"])
+            check.equal(get_movie.price, create_data["price"])
+            check.equal(get_movie.genreId, create_data["genreId"])
+            check.equal(get_movie.name, create_data["name"])
+            check.equal(get_movie.description, create_data["description"])
+            check.equal(get_movie.location, create_data["location"])
+            check.equal(get_movie.published, create_data["published"])
 
         with allure.step("Пробуем создать дубликат фильма для теста"):
             duplicate_response = authorized_admin.movies_api.create_movie(movie_data, expected_status=409)

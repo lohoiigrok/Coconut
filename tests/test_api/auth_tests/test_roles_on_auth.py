@@ -1,7 +1,9 @@
 import pytest
+from roles import Roles
+from models.models import ErrorResponseModel
 from types.parametrized_constants import (
-    LOGIN_VALID_BY_ROLE,
-    LOGIN_VALID_BY_ROLE_IDS,
+    LOGIN_VALID_CLIENTS,
+    LOGIN_VALID_CLIENTS_IDS,
     LOGIN_INVALID_PASSWORD_BY_ROLE,
     LOGIN_INVALID_PASSWORD_BY_ROLE_IDS,
     CREATE_USER_SUCCESS_BY_ROLE,
@@ -9,14 +11,14 @@ from types.parametrized_constants import (
     CREATE_USER_FORBIDDEN_BY_ROLE,
     CREATE_USER_FORBIDDEN_BY_ROLE_IDS
 )
-from roles import Roles
-from models.models import ErrorResponseModel
 
 class TestRolesAuth:
-    @pytest.mark.parametrize("client_by_role",
-        LOGIN_VALID_BY_ROLE,
+
+    @pytest.mark.parametrize(
+        "client_by_role",
+        LOGIN_VALID_CLIENTS,
         indirect=True,
-        ids=LOGIN_VALID_BY_ROLE_IDS
+        ids=LOGIN_VALID_CLIENTS_IDS
     )
     def test_login_with_valid_credentials_by_role(
         self,
@@ -24,15 +26,14 @@ class TestRolesAuth:
         registered_user: dict,
     ):
         """
-        /auth/login с валидными данными.
-        PUBLIC и USER, SUPER_ADMIN всем возращается токен.
+        /auth/login с валидными данными, PUBLIC и USER, SUPER_ADMIN всем возвращается токен.
         """
         login_data = {
                 "email": registered_user["email"],
                 "password": registered_user["password"],
             }
 
-        response = client_by_role.auth_api.login_user(login_data, expected_status = 200)
+        response = client_by_role.auth_api.login_user(login_data, expected_status=200)
         data = response.json()
 
         assert "accessToken" in data

@@ -1,11 +1,5 @@
 from roles import Roles
 
-ROLE_TO_FIXTURE = {
-    Roles.PUBLIC: "api_manager",
-    Roles.USER: "authorized_user",
-    Roles.SUPER_ADMIN: "authorized_admin",
-}
-
 CREATE_MOVIE_SUCCESS_BY_ROLE = [
     (Roles.SUPER_ADMIN, 201),
 ]
@@ -22,13 +16,13 @@ CREATE_MOVIE_FORBIDDEN_BY_ROLE_IDS = [
     "user_cannot_create_movie",
 ]
 
-GET_MOVIES_LIST_BY_ROLE = [
+GET_MOVIES_LIST_CLIENTS = [
     Roles.PUBLIC,
     Roles.USER,
     Roles.SUPER_ADMIN,
 ]
 
-GET_MOVIES_LIST_BY_ROLE_IDS = [
+GET_MOVIES_LIST_CLIENTS_IDS = [
     "public_can_get",
     "user_can_get",
     "superadmin_can_get"
@@ -50,13 +44,13 @@ DELETE_MOVIE_FORBIDDEN_BY_ROLE_IDS = [
     "user_cannot_delete_movie",
 ]
 
-LOGIN_VALID_BY_ROLE = [
+LOGIN_VALID_CLIENTS = [
     Roles.PUBLIC,
     Roles.USER,
     Roles.SUPER_ADMIN
 ]
 
-LOGIN_VALID_BY_ROLE_IDS = [
+LOGIN_VALID_CLIENTS_IDS = [
     "public_can_login_as_registered_user",
     "user_can_login_as_self",
     "superadmin_can_login_as_admin",

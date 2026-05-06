@@ -3,7 +3,6 @@ from requests import Session
 from clients.api_manager import ApiManager
 from roles import User, Roles
 from config import SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD
-from types.parametrized_constants import ROLE_TO_FIXTURE
 from utils.data_generator import DataGenerator
 
 
@@ -92,14 +91,25 @@ def authorized_user(authorized_admin: ApiManager, creation_user_data: dict) -> A
     http_session.close()
 
 @pytest.fixture
-def get_client_by_role(request):
-    def _get_client(role):
-        fixture_name = ROLE_TO_FIXTURE[role]
-        return request.getfixturevalue(fixture_name)
+def get_client_by_role(public_client, user_client, admin_client):
+    """Фабрика для получения клиента по роли."""
+    def _get_client(role: Roles):
+        clients = {
+            Roles.PUBLIC: public_client,
+            Roles.USER: user_client,
+            Roles.SUPER_ADMIN: admin_client
+        }
+        return clients[role]
 
     return _get_client
 
 @pytest.fixture
-def client_by_role(request):
-    fixture_name = ROLE_TO_FIXTURE[request.param]
-    return request.getfixturevalue(fixture_name)
+def client_by_role(request, public_client, user_client, admin_client):
+    """Фабрика клиентов по роли через indirect"""
+    role = request.param
+    clients = {
+        Roles.PUBLIC: public_client,
+        Roles.USER: user_client,
+        Roles.SUPER_ADMIN: admin_client
+    }
+    return clients[role]

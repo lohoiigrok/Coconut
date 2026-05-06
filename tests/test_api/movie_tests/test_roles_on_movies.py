@@ -1,18 +1,18 @@
 import pytest
+from roles import Roles
+from models.models import MovieResponseModel, ErrorResponseModel, MovieListResponseModel
 from types.parametrized_constants import (
                                     CREATE_MOVIE_SUCCESS_BY_ROLE,
                                     CREATE_MOVIE_SUCCESS_BY_ROLE_IDS,
                                     CREATE_MOVIE_FORBIDDEN_BY_ROLE,
                                     CREATE_MOVIE_FORBIDDEN_BY_ROLE_IDS,
-                                    GET_MOVIES_LIST_BY_ROLE,
-                                    GET_MOVIES_LIST_BY_ROLE_IDS,
+                                    GET_MOVIES_LIST_CLIENTS,
+                                    GET_MOVIES_LIST_CLIENTS_IDS,
                                     DELETE_MOVIE_SUCCESS_BY_ROLE,
                                     DELETE_MOVIE_SUCCESS_BY_ROLE_IDS,
                                     DELETE_MOVIE_FORBIDDEN_BY_ROLE,
                                     DELETE_MOVIE_FORBIDDEN_BY_ROLE_IDS
 )
-from roles import Roles
-from models.models import MovieResponseModel, ErrorResponseModel, MovieListResponseModel
 
 class TestActionByRoles:
     @pytest.mark.parametrize(
@@ -32,9 +32,10 @@ class TestActionByRoles:
         """
         client = get_client_by_role(role)
         response = client.movies_api.create_movie(movie_data, expected_status=expected_status)
-        data = response.json()
 
+        data = response.json()
         movie = MovieResponseModel(**data)
+
         assert movie.name == movie_data["name"]
         assert movie.price == movie_data["price"]
 
@@ -58,32 +59,15 @@ class TestActionByRoles:
         client = get_client_by_role(role)
         response = client.movies_api.create_movie(movie_data, expected_status=expected_status)
         data = response.json()
-
         error_response = ErrorResponseModel(**data)
+
         assert "Unauthorized" in str(error_response.message) or "Forbidden resource" in str(error_response.error)
 
     @pytest.mark.parametrize(
-        "role",
-        GET_MOVIES_LIST_BY_ROLE,
-        GET_MOVIES_LIST_BY_ROLE_IDS)
-    def test_get_movies_list_by_role(self, get_client_by_role, role: Roles, expected_status: int):
-        """
-        Три теста: PUBLIC, USER и SUPER_ADMIN могут получить список фильмов.
-        """
-        client = get_client_by_role(role)
-        response = client.movies_api.get_movies_list(
-            {"pageSize": 5, "page": 1},
-            expected_status=200,
-        )
-        data = response.json()
-        movie_list = MovieListResponseModel(**data)
-        assert movie_list.pageSize == 5
-
-    @pytest.mark.parametrize(
         "client_by_role",
-        GET_MOVIES_LIST_BY_ROLE,
+        GET_MOVIES_LIST_CLIENTS,
         indirect=True,
-        ids=GET_MOVIES_LIST_BY_ROLE_IDS)
+        ids=GET_MOVIES_LIST_CLIENTS_IDS)
     def test_get_movies_list_by_role(self, client_by_role):
         """
         Три теста: PUBLIC, USER и SUPER_ADMIN могут получить список фильмов.
@@ -94,6 +78,7 @@ class TestActionByRoles:
         )
         data = response.json()
         movie_list = MovieListResponseModel(**data)
+
         assert movie_list.pageSize == 5
 
     @pytest.mark.parametrize(
@@ -116,12 +101,13 @@ class TestActionByRoles:
 
         delete_response = client.movies_api.delete_movie(movie_id, expected_status=expected_status)
         delete_data = delete_response.json()
+        deleted_movie = MovieResponseModel(**delete_data)
 
-        deleted = MovieResponseModel(**delete_data)
-        assert deleted.id == movie_id
+        assert deleted_movie.id == movie_id
 
         get_response = client.movies_api.get_single_movie(movie_id, expected_status=404)
         error_response = ErrorResponseModel(**get_response.json())
+
         assert "Not Found" in str(error_response.error)
 
     @pytest.mark.parametrize(
@@ -144,10 +130,11 @@ class TestActionByRoles:
 
         delete_response = client.movies_api.delete_movie(movie_id, expected_status=expected_status)
         delete_data = delete_response.json()
-
         error_response = ErrorResponseModel(**delete_data)
+
         assert "Unauthorized" in str(error_response.message) or "Forbidden resource" in str(error_response.message)
 
         get_response = client.movies_api.get_single_movie(movie_id, expected_status=200)
         remaining = MovieResponseModel(**get_response.json())
+
         assert remaining.id == movie_id

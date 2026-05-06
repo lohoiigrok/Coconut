@@ -2,6 +2,9 @@ from customer_requester.custom_requester import CustomRequester
 from requests import Response
 from config import REGISTER_ENDPOINT
 from types.common_types import UserData
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 class UserApi(CustomRequester):
     """
@@ -56,13 +59,13 @@ class UserApi(CustomRequester):
             expected_status=expected_status,
         )
 
-    def clean_up_user(self, user_id: int) -> Response | None:
+    def clean_up_user(self, user_id: int) -> Response:
         """"
         Очистка данных после тестов
         :param user_id: ID пользователя.
         """
         try:
             self.delete_user(user_id, expected_status=200)
-        except ValueError:
-            # Для ситуаций где пользователь уже удален или не найден (404)
-            pass
+        except ValueError as exc:
+            logger.warning(f"User {user_id} was not deleted during cleanup: {exc}")
+            raise
